@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024" role="img" aria-labelledby="title desc">
+  <title id="title">PaperChampion icon</title>
+  <desc id="desc">A paper document with a champion crown mark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="18" y1="10" x2="82" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F766E" />
+      <stop offset="1" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="crown" x1="25" y1="30" x2="74" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FDE68A" />
+      <stop offset="1" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+
+  <rect x="6" y="6" width="88" height="88" rx="22" fill="url(#bg)" />
+  <path d="M31 22h28l12 12v44H31z" fill="#F8FAFC" />
+  <path d="M59 22v13h12z" fill="#DCEAFE" />
+  <path d="M24 38l10 13 16-21 16 21 10-13v27H24z" fill="url(#crown)" />
+  <path d="M29 66h42" fill="none" stroke="#92400E" stroke-width="4" stroke-linecap="round" />
+  <path d="M40 51h20" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+  <path d="M40 60h20" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,107 @@
+# PaperChampion Docker Compose.
+#
+# Usage:
+#   1. cp .env.example .env
+#   2. Edit .env with LLM and optional SMTP settings.
+#   3. docker compose up -d --build
+#   4. Open http://localhost:3003
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: paperchampion-backend
+    ports:
+      - "8003:8000"
+    volumes:
+      - pc_data:/app/data
+      - pc_logs:/app/logs
+      - pc_pip_cache:/.pip-cache
+    env_file:
+      - ./.env
+    environment:
+      - APP_ENV=production
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - SITE_URL=http://localhost:3003
+      - CORS_ALLOW_ORIGINS=http://localhost:3003,http://127.0.0.1:3003
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: paperchampion-worker
+    command: python -m apps.worker.main
+    volumes:
+      - pc_data:/app/data
+      - pc_logs:/app/logs
+      - pc_pip_cache:/.pip-cache
+    env_file:
+      - ./.env
+    environment:
+      - APP_ENV=production
+      - SITE_URL=http://localhost:3003
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/worker_heartbeat"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: paperchampion-frontend
+    ports:
+      - "3003:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+volumes:
+  pc_data:
+    name: paperchampion_data
+  pc_logs:
+    name: paperchampion_logs
+  pc_pip_cache:
+    name: paperchampion_pip_cache

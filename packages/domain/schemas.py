@@ -1,0 +1,163 @@
+from datetime import date, datetime
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+
+class PaperCreate(BaseModel):
+    arxiv_id: str
+    title: str
+    abstract: str
+    publication_date: date | None = None
+    metadata: dict = Field(default_factory=dict)
+
+
+class SkimReport(BaseModel):
+    one_liner: str
+    innovations: list[str]
+    keywords: list[str] = []
+    title_zh: str = ""
+    abstract_zh: str = ""
+    relevance_score: float
+
+
+class DeepDiveReport(BaseModel):
+    method_summary: str
+    experiments_summary: str
+    ablation_summary: str
+    reviewer_risks: list[str]
+
+
+class AskRequest(BaseModel):
+    question: str
+    top_k: int = 5
+
+
+class AskResponse(BaseModel):
+    answer: str
+    cited_paper_ids: list[UUID]
+    evidence: list[dict] = Field(default_factory=list)
+    rounds: int = 1
+
+
+class DailyBriefRequest(BaseModel):
+    date: datetime | None = None
+    recipient: str | None = None
+
+
+class TopicCreate(BaseModel):
+    name: str
+    query: str
+    category_id: str | None = None
+    category_ids: str | None = None  # Comma-separated e.g. "cs.LG,cs.CV"
+    enabled: bool = True
+    max_results_per_run: int = 20
+    retry_limit: int = 2
+    schedule_frequency: str = "daily"
+    schedule_time_utc: int = 21
+    enable_date_filter: bool = False
+    date_filter_days: int = 7
+    date_range_start: date | None = None
+    date_range_end: date | None = None
+    fetch_mode: str = "quantity"  # "quantity" | "date"
+
+
+class TopicUpdate(BaseModel):
+    query: str | None = None
+    category_id: str | None = None
+    category_ids: str | None = None
+    enabled: bool | None = None
+    max_results_per_run: int | None = None
+    retry_limit: int | None = None
+    schedule_frequency: str | None = None
+    schedule_time_utc: int | None = None
+    enable_date_filter: bool | None = None
+    date_filter_days: int | None = None
+    date_range_start: date | None = None
+    date_range_end: date | None = None
+    fetch_mode: str | None = None
+
+
+# ---------- LLM Provider Config ----------
+
+
+class LLMProviderCreate(BaseModel):
+    name: str
+    provider: str  # openai / anthropic / zhipu
+    api_key: str
+    api_base_url: str | None = None
+    model_skim: str
+    model_deep: str
+    model_vision: str | None = None
+    model_embedding: str
+    model_fallback: str
+
+
+class LLMProviderUpdate(BaseModel):
+    name: str | None = None
+    provider: str | None = None
+    api_key: str | None = None
+    api_base_url: str | None = None
+    model_skim: str | None = None
+    model_deep: str | None = None
+    model_vision: str | None = None
+    model_embedding: str | None = None
+    model_fallback: str | None = None
+
+
+# ---------- Agent ----------
+
+
+class AgentMessage(BaseModel):
+    """Agent 对话消息"""
+
+    role: str  # user / assistant / tool
+    content: str = ""
+    tool_call_id: str | None = None
+    tool_name: str | None = None
+    tool_args: dict | None = None
+    tool_result: dict | None = None
+
+
+class AgentChatRequest(BaseModel):
+    """Agent 对话请求"""
+
+    messages: list[AgentMessage]
+    confirmed_action_id: str | None = None
+
+
+# ---------- API Request Bodies ----------
+
+
+class ReferenceImportReq(BaseModel):
+    source_paper_id: str
+    source_paper_title: str = ""
+    entries: list[dict]
+    topic_ids: list[str] = []
+
+
+class SuggestKeywordsReq(BaseModel):
+    description: str
+
+
+class AIExplainReq(BaseModel):
+    text: str
+    action: str = "explain"
+
+
+class WritingProcessReq(BaseModel):
+    action: str
+    topic: str = ""
+    style: str = ""
+    content: str = ""
+    template_type: str = ""
+
+
+class WritingRefineReq(BaseModel):
+    messages: list[dict] = []
+
+
+class WritingMultimodalReq(BaseModel):
+    action: str
+    content: str = ""
+    image_base64: str

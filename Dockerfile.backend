@@ -1,0 +1,46 @@
+# ============================================================
+# PaperChampion Backend Dockerfile - FastAPI and worker runtime.
+# ============================================================
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Use a regional mirror when available.
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list 2>/dev/null || true
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml ./
+COPY packages/ packages/
+COPY apps/ apps/
+COPY scripts/ scripts/
+COPY alembic.ini ./
+COPY infra/migrations/ infra/migrations/
+
+# Use a regional PyPI mirror when available.
+RUN pip install --cache-dir=/.pip-cache ".[llm,pdf]" \
+    -i https://mirrors.aliyun.com/pypi/simple/ \
+    && pip install --cache-dir=/.pip-cache \
+        umap-learn \
+        psutil \
+        supervisor \
+    -i https://mirrors.aliyun.com/pypi/simple/
+
+RUN mkdir -p /app/data/papers /app/data/briefs /app/logs
+
+ENV DATABASE_URL=sqlite:////app/data/paperchampion.db
+ENV PYTHONUNBUFFERED=1
+
+RUN python scripts/local_bootstrap.py || true
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+	CMD curl -sf http://localhost:8000/health || exit 1
+
+CMD ["python", "-m", "uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

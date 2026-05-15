@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Testing & Linting
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.*
+!.env.example
+!frontend/.env.example
+
+# AI agent config (local only)
+.claude/
+CLAUDE.md
+.spec-workflow/
+.worktrees/
+worktrees/
+
+# Data (runtime generated)
+data/
+logs/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Glibc wrapper (for Node on CentOS 7)
+.glibc_wrapper/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Package manager
+package-lock.json
+frontend/package-lock.json
+
+# Egg info
+papermind.egg-info/
+paperchampion.egg-info/
+
+# Tauri / Desktop build
+src-tauri/target/
+src-tauri/binaries/
+*.dmg
+*.app
+
+# Docker deploy data (runtime)
+deploy/
+
+# Generated screenshots and local QA artifacts
+scripts/screenshots/
+test-results/
+playwright-report/
