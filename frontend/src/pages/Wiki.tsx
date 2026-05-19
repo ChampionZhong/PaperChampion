@@ -3,7 +3,7 @@
  * @author Bamzc
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardHeader, Button, Tabs, Spinner, Empty } from "@/components/ui";
+import { Card, CardHeader, Button, Tabs, Spinner, Empty, Dot } from "@/components/ui";
 import { wikiApi, generatedApi, tasksApi } from "@/services/api";
 import type { TaskStatus } from "@/services/api";
 import type {
@@ -191,13 +191,15 @@ export default function Wiki() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* 页面头 */}
-      <div className="page-hero rounded-2xl p-6">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5"><BookOpen className="h-5 w-5 text-primary" /></div>
-          <div>
-            <h1 className="text-2xl font-bold text-ink">Wiki</h1>
-            <p className="mt-0.5 text-sm text-ink-secondary">AI 驱动的结构化知识百科，基于真实论文数据生成</p>
-          </div>
+      <div className="flex items-center gap-2.5 pb-2">
+        <Dot module="wiki" size={6} />
+        <div>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+            Wiki
+          </h1>
+          <p className="mt-2 text-[12.5px] text-ink-secondary">
+            AI 驱动的结构化知识百科，基于真实论文数据生成
+          </p>
         </div>
       </div>
 
@@ -231,7 +233,7 @@ export default function Wiki() {
               />
             )}
           </div>
-          <Button icon={<BookOpen className="h-4 w-4" />} onClick={handleQuery} loading={loading}>
+          <Button iconLeft={<BookOpen className="h-4 w-4" />} onClick={handleQuery} loading={loading}>
             生成 Wiki
           </Button>
         </div>

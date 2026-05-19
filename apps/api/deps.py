@@ -105,6 +105,7 @@ def paper_list_response(papers: list, repo: PaperRepository) -> dict:
                 "keywords": (p.metadata_json or {}).get("keywords", []),
                 "title_zh": (p.metadata_json or {}).get("title_zh", ""),
                 "abstract_zh": (p.metadata_json or {}).get("abstract_zh", ""),
+                "institution": (p.metadata_json or {}).get("first_author_institution", ""),
                 "topics": topic_map.get(str(p.id), []),
             }
             for p in papers

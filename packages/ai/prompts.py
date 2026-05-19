@@ -4,20 +4,75 @@ LLM Prompt 模板
 """
 
 
-def build_skim_prompt(title: str, abstract: str) -> str:
+def build_skim_prompt(
+    title: str,
+    abstract: str,
+    authors: list[str] | None = None,
+    pdf_first_page: str | None = None,
+) -> str:
+    author_line = ""
+    if authors:
+        joined = ", ".join(str(a) for a in authors[:12] if a)
+        if joined:
+            author_line = f"作者: {joined}\n"
+    # When the first PDF page is available, it almost always contains the author
+    # block + affiliation list — this is ground truth, far more reliable than
+    # the LLM's training-data recall of "author -> institution".
+    has_pdf = bool(pdf_first_page and pdf_first_page.strip())
+    if has_pdf:
+        pdf_section = (
+            "\n=== PDF 第一页文本（含作者署名与机构标注） ===\n"
+            f"{pdf_first_page.strip()[:2000]}\n"
+            "=== PDF 文本结束 ===\n"
+        )
+        institution_rule = (
+            "- first_author_institution 必须严格从上面 PDF 第一页文本中提取：\n"
+            "  · 找到第一作者姓名，看名字旁标注的上标数字/符号（如 ¹ ² † ‡ *）或紧跟的机构名\n"
+            "  · 在页面下方/顶部的机构列表中按相同的索引找出对应的机构全名\n"
+            "  · 所有机构统一使用其英文官方简称，禁止使用中文。例如：\n"
+            "      Tsinghua University / Peking University / Shanghai Jiao Tong University /\n"
+            "      Fudan University / Zhejiang University / USTC / HKUST / HKU / CUHK /\n"
+            "      CAS (Chinese Academy of Sciences) / Shanghai AI Lab /\n"
+            "      Alibaba / ByteDance / Tencent / Huawei / Baidu / Xiaomi /\n"
+            "      MIT / Stanford / CMU / UC Berkeley / Cornell / Princeton /\n"
+            "      Google DeepMind / Meta AI / OpenAI / Anthropic / Microsoft Research / NVIDIA\n"
+            "  · 如果机构在文本中以中文出现（如「清华大学」），翻译为对应英文官方简称\n"
+            "    （Tsinghua University）后再填入\n"
+            "  · 第一作者跨多个单位时，填上标数字最小（通常是 1）所对应的机构\n"
+            "  · 禁止使用你的训练知识猜测；只在 PDF 文本里完全没有 author block 时才返回 \"\"\n"
+            "  · 禁止写 Unknown / N/A / 未知 / 不详\n"
+        )
+    else:
+        pdf_section = ""
+        institution_rule = (
+            "- first_author_institution 是第一作者目前主要从属的机构/单位简洁名称。"
+            "由于无法访问 PDF，请综合你对作者姓名所属研究背景的知识、摘要里的项目/工具线索、"
+            "以及作者列表的整体阵容（多作者来自同一机构是强信号）来判断。\n"
+            "  · 所有机构统一使用其英文官方简称，禁止使用中文。例如：\n"
+            "      Tsinghua University / Peking University / Shanghai Jiao Tong University /\n"
+            "      Fudan University / Zhejiang University / USTC / HKUST / HKU / CUHK /\n"
+            "      CAS (Chinese Academy of Sciences) / Shanghai AI Lab /\n"
+            "      Alibaba / ByteDance / Tencent / Huawei / Baidu / Xiaomi /\n"
+            "      MIT / Stanford / CMU / UC Berkeley / Cornell / Princeton /\n"
+            "      Google DeepMind / Meta AI / OpenAI / Anthropic / Microsoft Research / NVIDIA\n"
+            "  · 只有完全陌生、摘要也无任何线索时才返回空字符串 \"\"\n"
+            "  · 禁止写 Unknown / N/A / 未知 / 不详\n"
+        )
     return (
-        "你是科研助手。请根据标题和摘要输出严格 JSON：\n"
+        "你是科研助手。请根据论文信息输出严格 JSON：\n"
         '{"one_liner":"一句话中文总结", '
         '"innovations":["创新点1","创新点2","创新点3"], '
         '"keywords":["keyword1","keyword2","keyword3","keyword4","keyword5"], '
         '"title_zh":"中文标题翻译", '
         '"abstract_zh":"中文摘要翻译（完整翻译，不要缩写）", '
+        '"first_author_institution":"第一作者单位名称", '
         '"relevance_score":0.0}\n'
         "要求：\n"
         "- one_liner、innovations、title_zh、abstract_zh 必须使用中文\n"
         "- relevance_score 在 0 到 1 之间\n"
         "- keywords 提取 3~8 个最具代表性的英文学术关键词\n"
-        f"标题: {title}\n摘要: {abstract}\n"
+        f"{institution_rule}"
+        f"标题: {title}\n{author_line}摘要: {abstract}\n{pdf_section}"
     )
 
 

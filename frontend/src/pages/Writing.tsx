@@ -4,7 +4,7 @@
  * @author Bamzc
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Button, Spinner } from "@/components/ui";
+import { Button, Spinner, Dot } from "@/components/ui";
 import { useToast } from "@/contexts/ToastContext";
 import { writingApi } from "@/services/api";
 import type { WritingTemplate, WritingResult, WritingRefineMessage } from "@/types";
@@ -214,29 +214,27 @@ export default function Writing() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* 页面头 */}
-      <div className="page-hero rounded-2xl p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-primary/10 p-2.5">
-              <PenTool className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-ink">写作助手</h1>
-              <p className="mt-0.5 text-sm text-ink-secondary">
-                AI 驱动的学术写作工具箱，覆盖翻译、润色、去AI味等全场景
-              </p>
-            </div>
+      <div className="flex items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-2.5">
+          <Dot module="writing" size={6} />
+          <div>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+              写作助手
+            </h1>
+            <p className="mt-2 text-[12.5px] text-ink-secondary">
+              AI 驱动的学术写作工具箱，覆盖翻译、润色、去AI味等全场景
+            </p>
           </div>
-          <a
-            href="https://github.com/Leey21/awesome-ai-research-writing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-hover hover:text-ink"
-          >
-            <ExternalLink className="h-3 w-3" />
-            Prompt 来源
-          </a>
         </div>
+        <a
+          href="https://github.com/Leey21/awesome-ai-research-writing"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-[11.5px] font-medium text-ink-secondary transition-colors duration-fast hover:border-border-strong hover:bg-hover hover:text-ink"
+        >
+          <ExternalLink className="h-3 w-3" />
+          Prompt 来源
+        </a>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -347,14 +345,14 @@ export default function Writing() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    icon={<RotateCcw className="h-3.5 w-3.5" />}
+                    iconLeft={<RotateCcw className="h-3.5 w-3.5" />}
                     onClick={handleReset}
                     disabled={!inputText && !result}
                   >
                     重置
                   </Button>
                   <Button
-                    icon={<Send className="h-4 w-4" />}
+                    iconLeft={<Send className="h-4 w-4" />}
                     onClick={handleProcess}
                     loading={loading}
                     disabled={!inputText.trim() && !imageBase64}
@@ -394,7 +392,7 @@ export default function Writing() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    icon={copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                    iconLeft={copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                     onClick={handleCopy}
                   >
                     {copied ? "已复制" : "复制最新"}
@@ -494,7 +492,7 @@ export default function Writing() {
                 </div>
                 <Button
                   size="sm"
-                  icon={<Send className="h-3.5 w-3.5" />}
+                  iconLeft={<Send className="h-3.5 w-3.5" />}
                   onClick={handleRefine}
                   loading={refining}
                   disabled={!refineInput.trim() || refining}

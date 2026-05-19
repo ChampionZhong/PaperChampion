@@ -93,7 +93,7 @@ export default function Chat() {
           <Button
             variant="ghost"
             size="sm"
-            icon={<Trash2 className="h-3.5 w-3.5" />}
+            iconLeft={<Trash2 className="h-3.5 w-3.5" />}
             onClick={clearChat}
           >
             清空对话

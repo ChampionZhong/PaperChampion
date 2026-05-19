@@ -1,20 +1,43 @@
 /**
- * 加载指示器
+ * Spinner — loading indicator.
+ *
+ * Modes:
+ *   block  : centered in a padded column (page-level loads)
+ *   inline : glyph only, no container
+ *
  * @author Bamzc
  */
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
+type Size = "xs" | "sm" | "md" | "lg";
+type Mode = "block" | "inline";
+
 interface SpinnerProps {
-  className?: string;
-  text?: string;
+	size?: Size;
+	mode?: Mode;
+	text?: string;
+	className?: string;
 }
 
-export function Spinner({ className, text = "加载中..." }: SpinnerProps) {
-  return (
-    <div className={cn("flex flex-col items-center justify-center py-16", className)}>
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="mt-3 text-sm text-ink-secondary">{text}</p>
-    </div>
-  );
+const sizeStyles: Record<Size, string> = {
+	xs: "h-3 w-3",
+	sm: "h-4 w-4",
+	md: "h-6 w-6",
+	lg: "h-8 w-8",
+};
+
+export function Spinner({ size = "md", mode = "block", text, className }: SpinnerProps) {
+	const glyph = (
+		<Loader2 className={cn("animate-spin text-ink-tertiary", sizeStyles[size])} />
+	);
+	if (mode === "inline") {
+		return <span className={cn("inline-flex items-center", className)}>{glyph}</span>;
+	}
+	return (
+		<div className={cn("flex flex-col items-center justify-center gap-3 py-16", className)}>
+			{glyph}
+			{text && <p className="text-sm text-ink-tertiary">{text}</p>}
+		</div>
+	);
 }

@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Empty, Spinner } from "@/components/ui";
+import { Button, Empty, Spinner, Dot } from "@/components/ui";
 import {
   Search,
   Download,
@@ -380,13 +380,15 @@ export default function Collect() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* 页面头 */}
-      <div className="page-hero rounded-2xl p-6">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5"><Search className="h-5 w-5 text-primary" /></div>
-          <div>
-            <h1 className="text-2xl font-bold text-ink">论文收集</h1>
-            <p className="mt-0.5 text-sm text-ink-secondary">搜索下载论文 · 创建订阅自动收集 · 随时手动触发抓取</p>
-          </div>
+      <div className="flex items-center gap-2.5 pb-2">
+        <Dot module="collect" size={6} />
+        <div>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+            论文收集
+          </h1>
+          <p className="mt-2 text-[12.5px] text-ink-secondary">
+            搜索下载论文 · 创建订阅自动收集 · 随时手动触发抓取
+          </p>
         </div>
       </div>
 
@@ -423,7 +425,7 @@ export default function Collect() {
               className="h-11 w-full rounded-xl border border-border bg-page pl-10 pr-4 text-sm text-ink placeholder:text-ink-placeholder focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <Button icon={searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} onClick={handleSearch} loading={searching} disabled={!query.trim()}>
+          <Button iconLeft={searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} onClick={handleSearch} loading={searching} disabled={!query.trim()}>
             搜索
           </Button>
         </div>
@@ -522,7 +524,7 @@ export default function Collect() {
               <p className="text-xs text-ink-tertiary">按 arXiv 分类或关键词订阅，定时或手动抓取最新论文</p>
             </div>
           </div>
-          <Button size="sm" icon={<Plus className="h-3.5 w-3.5" />} onClick={openAdd}>新建订阅</Button>
+          <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={openAdd}>新建订阅</Button>
         </div>
 
         {/* 新建表单：顶部展示 */}
@@ -568,7 +570,7 @@ export default function Collect() {
                       placeholder="用自然语言描述你的研究兴趣，AI 自动生成搜索词..."
                       className="h-9 w-full rounded-lg border border-border bg-surface px-3 text-xs text-ink placeholder:text-ink-placeholder focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                   </div>
-                  <Button variant="secondary" size="sm" icon={aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  <Button variant="secondary" size="sm" iconLeft={aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                     onClick={handleAiSuggest} disabled={aiLoading || (!aiDesc.trim() && !formQuery.trim() && !query.trim())}>
                     生成
                   </Button>
@@ -578,7 +580,7 @@ export default function Collect() {
                     {suggestions.map((s, i) => (
                       <button key={i} onClick={() => applySuggestion(s)}
                         className="flex items-start gap-2 rounded-xl border border-border bg-surface p-3 text-left transition-all hover:border-primary/30 hover:shadow-sm">
-                        <Zap className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+                        <Zap className="mt-0.5 h-3 w-3 shrink-0 text-warning" />
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-ink">{s.name}</p>
                           <p className="mt-0.5 font-mono text-[10px] text-primary/70">{s.query}</p>
@@ -682,7 +684,7 @@ export default function Collect() {
 
               <div className="flex gap-2 pt-1">
                 <Button
-                  icon={editId ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                  iconLeft={editId ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
                   onClick={handleSave}
                   loading={saving}
                   disabled={!formName.trim() || (formCategoryIds.length === 0 && !formQuery.trim())}
@@ -753,7 +755,7 @@ export default function Collect() {
                               placeholder="用自然语言描述你的研究兴趣，AI 自动生成搜索词..."
                               className="h-9 w-full rounded-lg border border-border bg-surface px-3 text-xs text-ink placeholder:text-ink-placeholder focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                           </div>
-                          <Button variant="secondary" size="sm" icon={aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                          <Button variant="secondary" size="sm" iconLeft={aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                             onClick={handleAiSuggest} disabled={aiLoading || (!aiDesc.trim() && !formQuery.trim() && !query.trim())}>
                             生成
                           </Button>
@@ -763,7 +765,7 @@ export default function Collect() {
                             {suggestions.map((s, i) => (
                               <button key={i} onClick={() => applySuggestion(s)}
                                 className="flex items-start gap-2 rounded-xl border border-border bg-surface p-3 text-left transition-all hover:border-primary/30 hover:shadow-sm">
-                                <Zap className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+                                <Zap className="mt-0.5 h-3 w-3 shrink-0 text-warning" />
                                 <div className="min-w-0">
                                   <p className="text-xs font-medium text-ink">{s.name}</p>
                                   <p className="mt-0.5 font-mono text-[10px] text-primary/70">{s.query}</p>
@@ -864,7 +866,7 @@ export default function Collect() {
                       )}
                       <div className="flex gap-2 pt-1">
                         <Button
-                          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                          iconLeft={<CheckCircle2 className="h-3.5 w-3.5" />}
                           onClick={handleSave}
                           loading={saving}
                           disabled={!formName.trim() || (formCategoryIds.length === 0 && !formQuery.trim())}

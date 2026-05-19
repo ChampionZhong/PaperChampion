@@ -4,7 +4,7 @@
  * @author Bamzc
  */
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardHeader, Button, Badge, Input, Modal, Empty, Spinner } from "@/components/ui";
+import { Card, CardHeader, Button, Badge, Input, Modal, Empty, Spinner, Dot } from "@/components/ui";
 import { topicApi } from "@/services/api";
 import type { Topic, TopicCreate } from "@/types";
 import {
@@ -81,25 +81,30 @@ export default function Topics() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Topics</h1>
-          <p className="mt-1 text-sm text-ink-secondary">
-            管理订阅的研究主题，自动从 ArXiv 抓取论文
-          </p>
+      <div className="flex items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-2.5">
+          <Dot module="collect" size={6} />
+          <div>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+              Topics
+            </h1>
+            <p className="mt-2 text-[12.5px] text-ink-secondary">
+              管理订阅的研究主题，自动从 ArXiv 抓取论文
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
             variant="secondary"
             size="sm"
-            icon={<RefreshCw className="h-3.5 w-3.5" />}
+            iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
             onClick={loadTopics}
           >
             刷新
           </Button>
           <Button
             size="sm"
-            icon={<Plus className="h-3.5 w-3.5" />}
+            iconLeft={<Plus className="h-3.5 w-3.5" />}
             onClick={openCreate}
           >
             新建主题
@@ -157,7 +162,7 @@ export default function Topics() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  icon={
+                  iconLeft={
                     topic.enabled ? (
                       <ToggleRight className="h-3.5 w-3.5" />
                     ) : (
@@ -172,7 +177,7 @@ export default function Topics() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  icon={<Pencil className="h-3.5 w-3.5" />}
+                  iconLeft={<Pencil className="h-3.5 w-3.5" />}
                   onClick={() => openEdit(topic)}
                 >
                   编辑
@@ -180,7 +185,7 @@ export default function Topics() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  icon={<Trash2 className="h-3.5 w-3.5 text-error" />}
+                  iconLeft={<Trash2 className="h-3.5 w-3.5 text-error" />}
                   onClick={() => handleDelete(topic)}
                 >
                   删除

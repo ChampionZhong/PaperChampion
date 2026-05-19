@@ -29,6 +29,7 @@ import {
   Link2, Tag, Folder, Heart, Image as ImageIcon, BarChart3, Table2,
   FileCode2, Brain, ChevronDown, ChevronRight, TrendingUp, Target,
   ThumbsUp, ThumbsDown, Zap, FileSearch, X, Loader2, Check, Download,
+  Building2,
 } from "lucide-react";
 
 /* ================================================================
@@ -49,28 +50,30 @@ const AUTO_TASK_LABELS: Record<AutoAnalysisTask, string> = {
   embed: "嵌入",
 };
 
-const ACTION_BUTTON_CLASS = "flex min-h-[88px] items-center gap-3 rounded-2xl border p-4 transition-all hover:shadow-md disabled:opacity-50";
+const ACTION_BUTTON_CLASS = "group flex min-h-[80px] items-start gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-[border-color,box-shadow,background-color] duration-fast ease-standard hover:border-border-strong hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50";
 
+// All actions share the same neutral chrome; differentiation comes from the
+// glyph icon. State (done / loading) is conveyed by the icon swap, not color.
 const ACTION_TONE_CLASSES = {
-  download: "border-red-200/70 bg-red-50/80 hover:border-red-300 dark:border-red-500/30 dark:bg-red-500/10",
-  skim: "border-orange-200/70 bg-orange-50/80 hover:border-orange-300 dark:border-orange-500/30 dark:bg-orange-500/10",
-  deep: "border-amber-200/70 bg-amber-50/80 hover:border-amber-300 dark:border-amber-500/30 dark:bg-amber-500/10",
-  reasoning: "border-green-200/70 bg-green-50/80 hover:border-green-300 dark:border-green-500/30 dark:bg-green-500/10",
-  reader: "border-cyan-200/70 bg-cyan-50/80 hover:border-cyan-300 dark:border-cyan-500/30 dark:bg-cyan-500/10",
-  embed: "border-blue-200/70 bg-blue-50/80 hover:border-blue-300 dark:border-blue-500/30 dark:bg-blue-500/10",
-  similar: "border-indigo-200/70 bg-indigo-50/80 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10",
-  figures: "border-violet-200/70 bg-violet-50/80 hover:border-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10",
+  download: "",
+  skim: "",
+  deep: "",
+  reasoning: "",
+  reader: "",
+  embed: "",
+  similar: "",
+  figures: "",
 };
 
 const ACTION_ICON_CLASSES = {
-  download: "bg-red-500/10 text-red-500",
-  skim: "bg-orange-500/10 text-orange-500",
-  deep: "bg-amber-500/10 text-amber-500",
-  reasoning: "bg-green-500/10 text-green-500",
-  reader: "bg-cyan-500/10 text-cyan-500",
-  embed: "bg-blue-500/10 text-blue-500",
-  similar: "bg-indigo-500/10 text-indigo-500",
-  figures: "bg-violet-500/10 text-violet-500",
+  download: "bg-page text-ink-secondary",
+  skim: "bg-page text-ink-secondary",
+  deep: "bg-page text-ink-secondary",
+  reasoning: "bg-page text-ink-secondary",
+  reader: "bg-page text-ink-secondary",
+  embed: "bg-page text-ink-secondary",
+  similar: "bg-page text-ink-secondary",
+  figures: "bg-page text-ink-secondary",
 };
 
 type AutoTaskResult = {
@@ -534,43 +537,77 @@ export default function PaperDetail() {
     <div className="animate-fade-in space-y-6">
       {/* 页面头 */}
       <div className="flex items-center justify-between">
-        <button onClick={() => navigate("/papers")} className="flex items-center gap-1.5 text-sm text-ink-secondary transition-colors hover:text-ink">
+        <button
+          onClick={() => navigate("/papers")}
+          className="inline-flex items-center gap-1.5 text-[13px] text-ink-secondary transition-colors duration-fast hover:text-ink"
+        >
           <ArrowLeft className="h-4 w-4" /> 返回论文列表
         </button>
-        <button onClick={handleToggleFavorite} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-error/10" title={paper.favorited ? "取消收藏" : "收藏"}>
-          <Heart className={`h-5 w-5 transition-all ${paper.favorited ? "fill-red-500 text-red-500 scale-110" : "text-ink-tertiary"}`} />
-          <span className={paper.favorited ? "text-red-500" : "text-ink-tertiary"}>{paper.favorited ? "已收藏" : "收藏"}</span>
+        <button
+          onClick={handleToggleFavorite}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors duration-fast ${
+            paper.favorited
+              ? "bg-error-light text-error"
+              : "text-ink-tertiary hover:bg-hover hover:text-ink-secondary"
+          }`}
+          title={paper.favorited ? "取消收藏" : "收藏"}
+        >
+          <Heart className={`h-4 w-4 ${paper.favorited ? "fill-current" : ""}`} />
+          <span>{paper.favorited ? "已收藏" : "收藏"}</span>
         </button>
       </div>
 
       {/* 论文信息卡 */}
       <Card className="rounded-2xl">
-        <div className="flex items-start gap-2">
+        <div className="flex items-center gap-2">
           <Badge variant={sc.variant}>{sc.label}</Badge>
           {embedDone && <Badge variant="info">已向量化</Badge>}
           {paper.arxiv_id && (
-            <a href={`https://arxiv.org/abs/${paper.arxiv_id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3" />{paper.arxiv_id}
+            <a
+              href={`https://arxiv.org/abs/${paper.arxiv_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 font-mono text-[11px] text-ink-tertiary transition-colors hover:text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              {paper.arxiv_id}
             </a>
           )}
         </div>
-        <h1 className="mt-3 text-2xl font-bold leading-snug text-ink">{paper.title}</h1>
-        {paper.title_zh && <p className="mt-1 text-base text-ink-secondary">{paper.title_zh}</p>}
+        <h1 className="mt-4 font-display text-[28px] font-semibold leading-tight tracking-tight text-ink sm:text-[32px]">
+          {paper.title}
+        </h1>
+        {paper.title_zh && (
+          <p className="mt-3 text-[15px] leading-snug text-ink-secondary">
+            {paper.title_zh}
+          </p>
+        )}
         {paper.abstract ? (
           <>
-            <p className="mt-4 text-sm leading-relaxed text-ink-secondary">{paper.abstract}</p>
+            <Suspense fallback={<p className="mt-4 text-sm leading-relaxed text-ink-secondary">{paper.abstract}</p>}>
+              <Markdown className="mt-4 space-y-3 text-sm leading-relaxed text-ink-secondary">{paper.abstract}</Markdown>
+            </Suspense>
             {paper.abstract_zh && (
               <div className="mt-3 rounded-xl border border-border bg-page p-4">
                 <p className="mb-1 text-xs font-medium text-ink-tertiary">中文翻译</p>
-                <p className="text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</p>
+                <Suspense fallback={<p className="text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</p>}>
+                  <Markdown className="space-y-3 text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</Markdown>
+                </Suspense>
               </div>
             )}
           </>
         ) : paper.abstract_zh ? (
-          <p className="mt-4 text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</p>
+          <Suspense fallback={<p className="mt-4 text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</p>}>
+            <Markdown className="mt-4 space-y-3 text-sm leading-relaxed text-ink-secondary">{paper.abstract_zh}</Markdown>
+          </Suspense>
         ) : null}
         {paper.publication_date && <p className="mt-3 text-sm text-ink-tertiary">发表日期: {paper.publication_date}</p>}
         <div className="mt-3 flex flex-wrap gap-2">
+          {paper.institution && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-warning/20 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
+              <Building2 className="h-3 w-3" />{paper.institution}
+            </span>
+          )}
           {paper.topics && paper.topics.length > 0 && paper.topics.map((t) => (
             <span key={t} className="inline-flex items-center gap-1 rounded-md bg-primary-light px-2.5 py-1 text-xs font-medium text-primary">
               <Folder className="h-3 w-3" />{t}
@@ -592,15 +629,23 @@ export default function PaperDetail() {
         <button
           onClick={handleAutoAnalyze}
           disabled={autoAnalyzing || anyPipelineRunning}
-          className="flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4 transition-all hover:from-primary/10 hover:to-primary/15 hover:shadow-md disabled:opacity-60"
+          className="flex w-full items-center gap-3 rounded-xl border border-primary/40 bg-primary-light p-4 transition-[border-color,box-shadow,background-color] duration-fast ease-standard hover:border-primary hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-            {autoAnalyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white shadow-xs">
+            {autoAnalyzing ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin" />
+            ) : (
+              <Zap className="h-4.5 w-4.5" />
+            )}
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-ink">{autoAnalyzing ? autoStage || "分析中..." : "一键分析"}</p>
-            <p className="text-xs text-ink-tertiary">
-              {autoAnalyzing ? "并行执行可同时运行的 Pipeline" : "自动完成：下载 PDF、粗读、精读、图表、推理链、嵌入"}
+            <p className="text-[14px] font-semibold text-ink">
+              {autoAnalyzing ? autoStage || "分析中..." : "一键分析"}
+            </p>
+            <p className="text-[12px] text-ink-secondary">
+              {autoAnalyzing
+                ? "并行执行可同时运行的 Pipeline"
+                : "自动完成：下载 PDF、粗读、精读、图表、推理链、嵌入"}
             </p>
           </div>
         </button>

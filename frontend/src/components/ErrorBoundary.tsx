@@ -35,18 +35,19 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
       return (
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 p-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-            <AlertTriangle className="h-7 w-7 text-red-500" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-error-light">
+            <AlertTriangle className="h-6 w-6 text-error" strokeWidth={1.5} />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-ink">页面遇到了错误</p>
-            <p className="mt-1 max-w-md text-xs text-ink-tertiary">
+            <p className="text-[14px] font-medium text-ink">页面遇到了错误</p>
+            <p className="mt-1 max-w-md text-[12px] text-ink-tertiary">
               {this.state.error?.message || "未知错误"}
             </p>
           </div>
           <button
+            type="button"
             onClick={this.handleReset}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white shadow-xs transition-colors duration-fast hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             重试

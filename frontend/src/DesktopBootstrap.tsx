@@ -1,11 +1,18 @@
 /**
- * PaperChampion 启动引导
- * Web 模式直接渲染 App；Tauri 模式先检测配置、等待后端就绪。
+ * PaperChampion bootstrap.
+ *
+ * Web mode renders <App /> directly. Tauri mode probes for setup, then waits
+ * for the sidecar backend's port broadcast before mounting <App />.
+ *
+ * Editorial Lab refresh: dropped the slate gradient loading splash for the
+ * warm off-white surface used across the rest of the app.
+ *
  * @author Bamzc
  */
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import App from "./App";
+import LogoIcon from "@/assets/logo-icon.svg?react";
 import { isTauri, needsSetup, waitForBackend, setApiPort, listen } from "@/lib/tauri";
 
 const SetupWizard = lazy(() => import("@/pages/SetupWizard"));
@@ -13,77 +20,80 @@ const SetupWizard = lazy(() => import("@/pages/SetupWizard"));
 type Phase = "checking" | "setup" | "waiting" | "ready";
 
 function LoadingScreen({ message, error }: { message: string; error?: string }) {
-  return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-        <Sparkles className="h-8 w-8 text-white" />
-      </div>
-      {error ? (
-        <>
-          <p className="text-lg font-semibold text-red-600 dark:text-red-400">后端启动失败</p>
-          <p className="max-w-sm text-center text-sm text-red-500">{error}</p>
-        </>
-      ) : (
-        <>
-          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
-        </>
-      )}
-    </div>
-  );
+	return (
+		<div className="flex h-screen w-screen flex-col items-center justify-center gap-5 bg-page px-6">
+			<LogoIcon className="h-10 w-10 text-primary" />
+			<p className="font-display text-[20px] font-semibold leading-tight tracking-tight text-ink">
+				PaperChampion
+			</p>
+			{error ? (
+				<>
+					<p className="text-[13px] font-medium text-error">后端启动失败</p>
+					<p className="max-w-sm text-center text-[12px] text-error/80">{error}</p>
+				</>
+			) : (
+				<>
+					<div className="flex items-center gap-2 text-[12.5px] text-ink-secondary">
+						<Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+						<span>{message}</span>
+					</div>
+				</>
+			)}
+		</div>
+	);
 }
 
 export default function DesktopBootstrap() {
-  const [phase, setPhase] = useState<Phase>(isTauri() ? "checking" : "ready");
-  const [backendError, setBackendError] = useState("");
+	const [phase, setPhase] = useState<Phase>(isTauri() ? "checking" : "ready");
+	const [backendError, setBackendError] = useState("");
 
-  useEffect(() => {
-    if (!isTauri()) return;
+	useEffect(() => {
+		if (!isTauri()) return;
 
-    let unlistenError: (() => void) | null = null;
+		let unlistenError: (() => void) | null = null;
 
-    (async () => {
-      unlistenError = await listen<string>("backend-error", (msg) => {
-        setBackendError(msg);
-      });
+		(async () => {
+			unlistenError = await listen<string>("backend-error", (msg) => {
+				setBackendError(msg);
+			});
 
-      const setup = await needsSetup();
-      if (setup) {
-        setPhase("setup");
-      } else {
-        setPhase("waiting");
-        const port = await waitForBackend();
-        setApiPort(port);
-        setPhase("ready");
-      }
-    })();
+			const setup = await needsSetup();
+			if (setup) {
+				setPhase("setup");
+			} else {
+				setPhase("waiting");
+				const port = await waitForBackend();
+				setApiPort(port);
+				setPhase("ready");
+			}
+		})();
 
-    return () => {
-      unlistenError?.();
-    };
-  }, []);
+		return () => {
+			unlistenError?.();
+		};
+	}, []);
 
-  if (phase === "ready") {
-    return <App />;
-  }
+	if (phase === "ready") {
+		return <App />;
+	}
 
-  if (phase === "setup") {
-    return (
-      <Suspense fallback={<LoadingScreen message="加载引导页..." />}>
-        <SetupWizard
-          onReady={(port: number) => {
-            setApiPort(port);
-            setPhase("ready");
-          }}
-        />
-      </Suspense>
-    );
-  }
+	if (phase === "setup") {
+		return (
+			<Suspense fallback={<LoadingScreen message="加载引导页…" />}>
+				<SetupWizard
+					onReady={(port: number) => {
+						setApiPort(port);
+						setPhase("ready");
+					}}
+				/>
+			</Suspense>
+		);
+	}
 
-  return (
-    <LoadingScreen
-      message={phase === "checking" ? "正在检查配置..." : "正在启动后端服务..."}
-      error={backendError || undefined}
-    />
-  );
+	return (
+		<LoadingScreen
+			message={phase === "checking" ? "正在检查配置…" : "正在启动后端服务…"}
+			error={backendError || undefined}
+		/>
+	);
 }

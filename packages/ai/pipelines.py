@@ -169,18 +169,26 @@ class PaperPipelines:
         date_filter_days: int = 7,
         date_range_start: date | None = None,
         date_range_end: date | None = None,
+        enable_date_filter: bool = True,
         progress_callback: Callable[[str, int, int], None] | None = None,
     ) -> list[PaperCreate]:
         """Fetch from arXiv without ingesting. Returns list of PaperCreate.
 
-        In date mode: no quantity limit, fetches all papers in the date range.
-        In quantity mode: stops at max_results.
+        In date mode (fetch_mode="date" AND enable_date_filter=True): no quantity
+        limit, fetches all papers in the date range.
+        In quantity mode (fetch_mode="quantity", OR enable_date_filter=False
+        regardless of fetch_mode): stops at max_results without time filtering.
         """
         papers_collected: list[PaperCreate] = []
         batch_size = 20
         arxiv_request_delay = get_settings().arxiv_request_delay_sec
 
-        use_date_filter = fetch_mode == "date"
+        # enable_date_filter is the master switch: when False, fall back to
+        # quantity mode even if fetch_mode="date". This prevents the historical
+        # footgun where topics with fetch_mode=date but no date_range fall into
+        # a 1-day fallback window and silently return 0 papers (e.g. on weekends
+        # when arXiv has no fresh announcements).
+        use_date_filter = (fetch_mode == "date") and enable_date_filter
         if use_date_filter:
             sort_by = "lastUpdatedDate"
             days_back = 0
@@ -296,10 +304,13 @@ class PaperPipelines:
         date_filter_days: int = 7,
         date_range_start: date | None = None,
         date_range_end: date | None = None,
+        enable_date_filter: bool = True,
     ) -> tuple[int, list[str], int]:
         """搜索 arXiv 并入库，upsert 去重。返回 (total_count, inserted_ids, new_papers_count)
 
         fetch_mode: "quantity" = by max_results; "date" = all papers in date range, no limit
+        enable_date_filter: master switch — when False, forces quantity mode
+        regardless of fetch_mode (prevents the 1-day window weekend footgun).
         """
         inserted_ids: list[str] = []
         new_papers_count = 0
@@ -307,7 +318,7 @@ class PaperPipelines:
         batch_size = 20
         arxiv_request_delay = get_settings().arxiv_request_delay_sec
 
-        use_date_filter = fetch_mode == "date"
+        use_date_filter = (fetch_mode == "date") and enable_date_filter
         if use_date_filter:
             sort_by = "lastUpdatedDate"
             days_back = 0
@@ -636,6 +647,7 @@ class PaperPipelines:
         date_filter_days: int = 7,
         date_range_start: date | None = None,
         date_range_end: date | None = None,
+        enable_date_filter: bool = True,
     ) -> dict:
         """ingest_arxiv 返回详细统计信息"""
         total_count, inserted_ids, new_count = self.ingest_arxiv(
@@ -648,6 +660,7 @@ class PaperPipelines:
             date_filter_days=date_filter_days,
             date_range_start=date_range_start,
             date_range_end=date_range_end,
+            enable_date_filter=enable_date_filter,
         )
         return {
             "total_count": total_count,
@@ -665,7 +678,42 @@ class PaperPipelines:
             run = run_repo.start("skim", paper_id=paper_id)
             try:
                 paper = paper_repo.get_by_id(paper_id)
-                prompt = build_skim_prompt(paper.title, paper.abstract)
+                authors_meta = (paper.metadata_json or {}).get("authors") or []
+                if not isinstance(authors_meta, list):
+                    authors_meta = []
+                # Make sure we have the PDF locally — the first page contains the
+                # author block + affiliation list, which is the ground-truth signal
+                # for first_author_institution extraction. Best-effort: any failure
+                # falls back to author-name-only inference inside build_skim_prompt.
+                if not paper.pdf_path:
+                    try:
+                        new_pdf = self.arxiv.download_pdf(paper.arxiv_id)
+                        paper_repo.set_pdf_path(paper_id, new_pdf)
+                        paper = paper_repo.get_by_id(paper_id)
+                    except Exception as exc:
+                        logger.warning(
+                            "skim PDF download failed for %s: %s",
+                            paper.arxiv_id,
+                            exc,
+                        )
+                pdf_first_page = ""
+                if paper.pdf_path:
+                    try:
+                        pdf_first_page = self.pdf_extractor.extract_text(
+                            paper.pdf_path, max_pages=1
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "skim PDF first-page extract failed for %s: %s",
+                            paper.arxiv_id,
+                            exc,
+                        )
+                prompt = build_skim_prompt(
+                    paper.title,
+                    paper.abstract,
+                    authors=[str(a) for a in authors_meta if a],
+                    pdf_first_page=pdf_first_page or None,
+                )
                 decision = CostGuardService(session, self.llm).choose_model(
                     stage="skim",
                     prompt=prompt,
@@ -689,6 +737,8 @@ class PaperPipelines:
                     meta["title_zh"] = skim.title_zh
                 if skim.abstract_zh:
                     meta["abstract_zh"] = skim.abstract_zh
+                if skim.first_author_institution:
+                    meta["first_author_institution"] = skim.first_author_institution
                 paper.metadata_json = meta
                 paper_repo.update_read_status(paper_id, ReadStatus.skimmed)
                 trace_repo.create(
@@ -822,6 +872,10 @@ class PaperPipelines:
                 keywords = [str(keywords)]
             title_zh = str(parsed_json.get("title_zh", "")).strip()
             abstract_zh = str(parsed_json.get("abstract_zh", "")).strip()
+            institution = str(parsed_json.get("first_author_institution", "")).strip()
+            # filter out non-informative placeholders the LLM occasionally returns
+            if institution.lower() in {"unknown", "n/a", "na", "none", "未知", "不详"}:
+                institution = ""
             try:
                 score = float(parsed_json.get("relevance_score", 0.5))
             except (TypeError, ValueError):
@@ -836,6 +890,7 @@ class PaperPipelines:
                 keywords=[str(k)[:60] for k in keywords[:8]],
                 title_zh=title_zh[:500],
                 abstract_zh=abstract_zh[:3000],
+                first_author_institution=institution[:200],
                 relevance_score=score,
             )
 

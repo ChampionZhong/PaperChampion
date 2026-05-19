@@ -39,6 +39,7 @@ CLAUDE.md
 .spec-workflow/
 .worktrees/
 worktrees/
+plan/
 
 # Data (runtime generated)
 data/

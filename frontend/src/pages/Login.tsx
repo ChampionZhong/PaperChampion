@@ -1,117 +1,113 @@
 /**
- * PaperChampion - 登录页面
+ * Login — single-password gate.
+ *
+ * Editorial Lab refresh: warm off-white surface, serif display brand,
+ * hairline-border card, indigo CTA. Dark slate gradient retired.
+ *
  * @author Color2333
  */
-import { useState, useEffect } from "react";
-import { Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import LogoIcon from "@/assets/logo-icon.svg?react";
+import { Button, Input } from "@/components/ui";
 import { authApi } from "@/services/api";
 
 interface LoginPageProps {
-  onLoginSuccess: () => void;
+	onLoginSuccess: () => void;
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    // 页面加载时检查是否需要认证
-    checkAuthStatus();
-  }, []);
+	useEffect(() => {
+		(async () => {
+			try {
+				const status = await authApi.status();
+				if (!status.auth_enabled) onLoginSuccess();
+			} catch {
+				// fall through to login UI
+			}
+		})();
+	}, [onLoginSuccess]);
 
-  async function checkAuthStatus() {
-    try {
-      const status = await authApi.status();
-      if (!status.auth_enabled) {
-        // 未启用认证，直接进入
-        onLoginSuccess();
-      }
-    } catch {
-      // 忽略错误，继续显示登录页
-    }
-  }
+	async function handleSubmit(e: FormEvent) {
+		e.preventDefault();
+		if (!password.trim()) {
+			setError("请输入密码");
+			return;
+		}
+		setLoading(true);
+		setError("");
+		try {
+			const result = await authApi.login(password);
+			localStorage.setItem("auth_token", result.access_token);
+			onLoginSuccess();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "登录失败，请重试");
+		} finally {
+			setLoading(false);
+		}
+	}
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!password.trim()) {
-      setError("请输入密码");
-      return;
-    }
+	return (
+		<div className="flex min-h-screen items-center justify-center bg-page px-4 py-12">
+			<div className="w-full max-w-sm">
+				<div className="mb-10 flex flex-col items-center text-center">
+					<LogoIcon className="mb-5 h-10 w-10 text-primary" />
+					<h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight text-ink">
+						PaperChampion
+					</h1>
+					<p className="mt-3 text-[13px] text-ink-secondary">
+						AI 驱动的学术论文研究平台
+					</p>
+				</div>
 
-    setLoading(true);
-    setError("");
+				<form
+					onSubmit={handleSubmit}
+					className="rounded-2xl border border-border bg-surface p-6 shadow-xs"
+				>
+					<Input
+						type={showPassword ? "text" : "password"}
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						placeholder="访问密码"
+						label="密码"
+						disabled={loading}
+						autoFocus
+						rightIcon={
+							<button
+								type="button"
+								onClick={() => setShowPassword((v) => !v)}
+								className="pointer-events-auto text-ink-tertiary transition-colors hover:text-ink-secondary"
+								aria-label={showPassword ? "隐藏密码" : "显示密码"}
+								tabIndex={-1}
+							>
+								{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+							</button>
+						}
+						error={error || undefined}
+					/>
 
-    try {
-      const result = await authApi.login(password);
-      localStorage.setItem("auth_token", result.access_token);
-      onLoginSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "登录失败，请重试");
-    } finally {
-      setLoading(false);
-    }
-  }
+					<Button
+						type="submit"
+						disabled={loading}
+						loading={loading}
+						className="mt-4 w-full"
+					>
+						{loading ? "验证中…" : "进入系统"}
+					</Button>
+				</form>
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md px-4">
-        {/* Logo 和标题 */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">PaperChampion</h1>
-          <p className="text-slate-400 text-sm">请输入访问密码</p>
-        </div>
-
-        {/* 登录表单 */}
-        <form onSubmit={handleSubmit} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-slate-700/50">
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="访问密码"
-              className="w-full px-4 py-3 pr-12 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              disabled={loading}
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
-
-          {error && (
-            <p className="mt-3 text-sm text-red-400 text-center">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-4 py-3 bg-primary hover:bg-primary-hover disabled:bg-slate-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>验证中...</span>
-              </>
-            ) : (
-              <span>进入系统</span>
-            )}
-          </button>
-        </form>
-
-        {/* 底部提示 */}
-        <p className="text-center mt-6 text-slate-500 text-xs">
-          PaperChampion · AI 驱动的学术论文研究平台
-        </p>
-      </div>
-    </div>
-  );
+				<p className="mt-6 text-center text-[11px] text-ink-tertiary">
+					{loading && (
+						<Loader2 className="-mt-0.5 mr-1 inline h-3 w-3 animate-spin" />
+					)}
+					Editorial Lab · v0.2.0
+				</p>
+			</div>
+		</div>
+	);
 }

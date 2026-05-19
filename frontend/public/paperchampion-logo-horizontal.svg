@@ -1,31 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 64" width="380" height="64" role="img" aria-labelledby="title desc">
-  <title id="title">PaperChampion logo</title>
-  <desc id="desc">PaperChampion wordmark with a paper and crown icon.</desc>
-  <defs>
-    <linearGradient id="bg" x1="10" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0F766E" />
-      <stop offset="1" stop-color="#1D4ED8" />
-    </linearGradient>
-    <linearGradient id="crown" x1="20" y1="22" x2="44" y2="38" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FDE68A" />
-      <stop offset="1" stop-color="#F59E0B" />
-    </linearGradient>
-    <style>
-      .wordmark {
-        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        fill: #111827;
-        letter-spacing: 0;
-      }
-    </style>
-  </defs>
-
-  <rect x="8" y="8" width="48" height="48" rx="12" fill="url(#bg)" />
-  <path d="M24 17h16l7 7v25H24z" fill="#F8FAFC" />
-  <path d="M40 17v8h7z" fill="#DCEAFE" />
-  <path d="M18 28l6 8 8-11 8 11 6-8v15H18z" fill="url(#crown)" />
-  <path d="M22 44h24" fill="none" stroke="#92400E" stroke-width="3" stroke-linecap="round" />
-  <path d="M29 35h10" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
-  <text x="72" y="42" class="wordmark">PaperChampion</text>
+	<title id="title">PaperChampion logo</title>
+	<desc id="desc">PaperChampion wordmark with a paper-and-sparkle icon.</desc>
+	<defs>
+		<style>
+			.wordmark {
+				font-family: "IBM Plex Serif", "Source Han Serif SC", Georgia, serif;
+				font-size: 28px;
+				font-weight: 600;
+				fill: #1A1816;
+				letter-spacing: -0.01em;
+			}
+		</style>
+	</defs>
+	<!-- Square indigo badge with document icon -->
+	<rect x="8" y="8" width="48" height="48" rx="11" fill="#4F46E5"/>
+	<path
+		d="M22 19C22 18.4477 22.4477 18 23 18H37.5L45 25.5V44C45 44.5523 44.5523 45 44 45H23C22.4477 45 22 44.5523 22 44V19Z"
+		stroke="#FFFFFF"
+		stroke-width="2"
+		stroke-linejoin="round"
+		fill="none"
+	/>
+	<path
+		d="M37 18V26H45"
+		stroke="#FFFFFF"
+		stroke-width="2"
+		stroke-linejoin="round"
+		fill="none"
+	/>
+	<path
+		d="M32 30L33.5 33.5L37 35L33.5 36.5L32 40L30.5 36.5L27 35L30.5 33.5L32 30Z"
+		fill="#FFFFFF"
+	/>
+	<!-- Wordmark -->
+	<text x="72" y="42" class="wordmark">PaperChampion</text>
 </svg>

@@ -256,7 +256,7 @@ export default function CitationPanel() {
                 </div>
               )}
             </div>
-            <Button icon={<Search className="h-4 w-4" />} onClick={handleQuery} loading={loading}>分析</Button>
+            <Button iconLeft={<Search className="h-4 w-4" />} onClick={handleQuery} loading={loading}>分析</Button>
           </div>
         )}
 
@@ -400,7 +400,7 @@ export default function CitationPanel() {
                 : <TopicNetworkGraphView data={topicNetData} />}
               <div className="flex items-center justify-center">
                 <Button
-                  icon={<RotateCw className={`h-4 w-4 ${deepTracing ? "animate-spin" : ""}`} />}
+                  iconLeft={<RotateCw className={`h-4 w-4 ${deepTracing ? "animate-spin" : ""}`} />}
                   loading={deepTracing}
                   onClick={handleDeepTrace}
                 >
@@ -1085,15 +1085,15 @@ function TopicNetworkGraphView({ data }: { data: TopicCitationNetwork }) {
       </div>
 
       {data.key_external_papers && data.key_external_papers.length > 0 && (
-        <div className="mt-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 p-4">
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
+        <div className="mt-4 rounded-xl border border-border bg-surface p-4">
+          <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">
             <ExternalLink className="h-3.5 w-3.5" /> 关键外部论文（共引分析）
           </p>
           <div className="space-y-1">
             {data.key_external_papers.map((p) => (
               <div key={p.id} className="flex items-center gap-2 text-sm">
                 <PaperLink id={p.id} title={p.title} className="flex-1 truncate" />
-                <span className="shrink-0 rounded-md bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:text-purple-300">
+                <span className="shrink-0 rounded-md bg-primary-light px-2 py-0.5 font-mono text-[10px] font-medium tabular-nums text-primary-strong">
                   共引 {p.co_citation_count}
                 </span>
               </div>

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Empty } from "@/components/ui/Empty";
+import { Tabs } from "@/components/ui/Tabs";
 import {
   llmConfigApi,
   pipelineApi,
@@ -71,26 +72,24 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<Tab>("llm");
 
   return (
-    <Modal title="系统设置" onClose={onClose} maxWidth="xl">
+    <Modal title="系统设置" onClose={onClose} width="xl">
       <div className="flex flex-col" style={{ height: "600px", maxHeight: "85vh" }}>
         {/* 标签栏 */}
-        <div className="mb-4 flex gap-1 rounded-xl bg-page p-1 flex-shrink-0">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all",
-                tab === t.key
-                  ? "bg-surface text-primary shadow-sm"
-                  : "text-ink-secondary hover:text-ink",
-              )}
-            >
-              <t.icon className="h-3.5 w-3.5" />
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          variant="underline"
+          tabs={TABS.map((t) => ({
+            id: t.key,
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                <t.icon className="h-3.5 w-3.5" />
+                {t.label}
+              </span>
+            ),
+          }))}
+          active={tab}
+          onChange={(id) => setTab(id as Tab)}
+          className="mb-5 shrink-0"
+        />
 
         {/* 内容区 */}
         <div className="flex-1 overflow-y-auto pr-1">
@@ -252,7 +251,7 @@ function LLMTab() {
               className={cn(
                 "flex items-center justify-between rounded-xl border px-4 py-3",
                 cfg.is_active
-                  ? "border-primary/30 bg-primary-50"
+                  ? "border-primary/40 bg-primary-light"
                   : "border-border bg-surface",
               )}
             >
@@ -334,11 +333,11 @@ function LLMTab() {
 
 function ProviderBadge({ provider }: { provider: string }) {
   const colors: Record<string, string> = {
-    zhipu: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    zhipu: "bg-info-light text-info",
     openai:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+      "bg-success-light text-success",
     anthropic:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+      "bg-warning-light text-warning",
   };
   const labels: Record<string, string> = {
     zhipu: "智谱",
@@ -418,7 +417,7 @@ function AddConfigInline({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-50 p-4">
+    <div className="space-y-3 rounded-xl border border-primary/40 bg-primary-light p-4">
       {error && (
         <div className="rounded-lg bg-error-light px-3 py-2 text-xs text-error">
           {error}
@@ -556,7 +555,7 @@ function EditConfigInline({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-50 p-4">
+    <div className="space-y-3 rounded-xl border border-primary/40 bg-primary-light p-4">
       <p className="text-xs font-medium text-ink">
         编辑：{config.name}
       </p>
@@ -1224,7 +1223,7 @@ function AddEmailConfigInline({ onCreated, onCancel }: { onCreated: () => void; 
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-50 p-4">
+    <div className="space-y-3 rounded-xl border border-primary/40 bg-primary-light p-4">
       <h4 className="text-xs font-medium text-ink">添加邮箱配置</h4>
       {error && (
         <div className="rounded-lg bg-error-light px-3 py-2 text-xs text-error">
@@ -1332,7 +1331,7 @@ function EditEmailConfigInline({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-50 p-4">
+    <div className="space-y-3 rounded-xl border border-primary/40 bg-primary-light p-4">
       <h4 className="text-xs font-medium text-ink">编辑邮箱配置</h4>
       {error && (
         <div className="rounded-lg bg-error-light px-3 py-2 text-xs text-error">

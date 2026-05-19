@@ -59,17 +59,17 @@ export default function SetupWizard({ onReady }: Props) {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900">
-      <div className="w-full max-w-lg rounded-2xl border border-white/30 bg-white/80 p-8 shadow-2xl backdrop-blur-lg dark:border-white/10 dark:bg-gray-800/80">
+    <div className="flex h-screen w-screen items-center justify-center bg-page px-4">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-8 shadow-sm">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-            <Sparkles className="h-8 w-8 text-white" />
+          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-light">
+            <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="font-display text-[26px] font-semibold leading-tight tracking-tight text-ink">
             欢迎使用 PaperChampion
           </h1>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-3 text-[13px] text-ink-secondary">
             首次启动，请配置数据存储路径
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function SetupWizard({ onReady }: Props) {
         <button
           onClick={handleStart}
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-blue-600 hover:to-indigo-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-[14px] font-semibold text-white shadow-xs transition-colors duration-fast ease-standard hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? (
             <>

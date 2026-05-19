@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Spinner, Empty } from "@/components/ui";
+import { Button, Spinner, Empty, Dot } from "@/components/ui";
 import { useToast } from "@/contexts/ToastContext";
 import DOMPurify from "dompurify";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -140,17 +140,21 @@ export default function DailyBrief() {
   return (
     <div className="animate-fade-in flex h-full flex-col">
       {/* 顶栏 */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2"><Newspaper className="h-5 w-5 text-primary" /></div>
-          <div>
-            <h1 className="text-lg font-bold text-ink">研究简报</h1>
-            <p className="text-xs text-ink-tertiary">自动汇总最新研究进展</p>
-          </div>
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
+        <div className="flex items-center gap-2.5">
+          <Dot module="brief" size={6} />
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+            研究简报
+          </h1>
+          <span className="ml-1 text-[12px] text-ink-tertiary">
+            自动汇总最新研究进展
+          </span>
         </div>
         <Button
           size="sm"
-          icon={showGenPanel ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          iconLeft={
+            showGenPanel ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />
+          }
           onClick={() => setShowGenPanel(!showGenPanel)}
         >
           {showGenPanel ? "收起" : "生成新简报"}
@@ -176,7 +180,7 @@ export default function DailyBrief() {
                 placeholder="可选"
                 className="h-9 w-48 rounded-lg border border-border bg-page px-3 text-xs text-ink placeholder:text-ink-placeholder focus:border-primary focus:outline-none" />
             </div>
-            <Button icon={loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} onClick={handleGenerate} loading={loading}>
+            <Button iconLeft={<Send className="h-4 w-4" />} onClick={handleGenerate} loading={loading}>
               生成
             </Button>
           </div>
@@ -223,21 +227,27 @@ export default function DailyBrief() {
                     key={item.id}
                     onClick={() => handleView(item)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleView(item); }}
-                    className={`group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-all ${
+                    className={`group flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left transition-colors duration-fast ${
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-ink hover:bg-surface"
+                        ? "bg-primary-light text-primary-strong"
+                        : "text-ink-secondary hover:bg-hover hover:text-ink"
                     }`}
                   >
-                    <FileText className={`h-3.5 w-3.5 shrink-0 ${active ? "text-primary" : "text-ink-tertiary"}`} />
+                    <FileText
+                      className={`h-3.5 w-3.5 shrink-0 ${active ? "text-primary" : "text-ink-tertiary"}`}
+                    />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium">{item.title.replace("Daily Brief: ", "")}</p>
-                      <p className="mt-0.5 text-[10px] text-ink-tertiary">{fmtDate(item.created_at)}</p>
+                      <p className="truncate text-[12.5px] font-medium">
+                        {item.title.replace("Daily Brief: ", "")}
+                      </p>
+                      <p className="mt-0.5 text-[10.5px] text-ink-tertiary">
+                        {fmtDate(item.created_at)}
+                      </p>
                     </div>
                     <button
                       aria-label="删除"
                       onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(item.id); }}
-                      className="shrink-0 rounded p-0.5 text-ink-tertiary opacity-0 transition-opacity hover:text-error group-hover:opacity-100"
+                      className="shrink-0 rounded p-0.5 text-ink-tertiary opacity-0 transition-opacity duration-fast hover:bg-error-light hover:text-error group-hover:opacity-100"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

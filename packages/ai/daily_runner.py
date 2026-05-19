@@ -45,6 +45,7 @@ def run_topic_fetch(topic_id: str, progress_callback=None) -> dict:
         date_filter_days = getattr(topic, "date_filter_days", 7)
         date_range_start = getattr(topic, "date_range_start", None)
         date_range_end = getattr(topic, "date_range_end", None)
+        enable_date_filter = bool(getattr(topic, "enable_date_filter", False))
 
         try:
             papers = pipelines.fetch_arxiv_only(
@@ -55,6 +56,7 @@ def run_topic_fetch(topic_id: str, progress_callback=None) -> dict:
                 date_filter_days=date_filter_days,
                 date_range_start=date_range_start,
                 date_range_end=date_range_end,
+                enable_date_filter=enable_date_filter,
                 progress_callback=progress_callback,
             )
             run_repo = TopicFetchRunRepository(session)
@@ -217,6 +219,7 @@ def run_topic_ingest(topic_id: str) -> dict:
         date_filter_days = getattr(topic, "date_filter_days", 7)
         date_range_start = getattr(topic, "date_range_start", None)
         date_range_end = getattr(topic, "date_range_end", None)
+        enable_date_filter = bool(getattr(topic, "enable_date_filter", False))
 
         last_error: str | None = None
         ids: list[str] = []
@@ -234,6 +237,7 @@ def run_topic_ingest(topic_id: str) -> dict:
                     date_filter_days=date_filter_days,
                     date_range_start=date_range_start,
                     date_range_end=date_range_end,
+                    enable_date_filter=enable_date_filter,
                 )
                 ids = result["inserted_ids"]
                 new_count = result["new_count"]

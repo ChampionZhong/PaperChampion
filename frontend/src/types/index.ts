@@ -177,6 +177,7 @@ export interface Paper {
   authors?: string[];
   title_zh?: string;
   abstract_zh?: string;
+  institution?: string;
   topics?: string[];
   skim_report?: {
     summary_md: string;

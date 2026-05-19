@@ -4,7 +4,7 @@
  */
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Badge, Spinner, Empty } from "@/components/ui";
+import { Button, Badge, Spinner, Empty, Dot } from "@/components/ui";
 import { pipelineApi } from "@/services/api";
 import { formatDuration, timeAgo } from "@/lib/utils";
 import type { PipelineRun } from "@/types";
@@ -45,12 +45,14 @@ export default function Pipelines() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* 页面头 */}
-      <div className="page-hero flex items-center justify-between rounded-2xl p-6">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5"><Cpu className="h-5 w-5 text-primary" /></div>
+      <div className="flex items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-2.5">
+          <Dot module="dashboard" size={6} />
           <div>
-            <h1 className="text-2xl font-bold text-ink">Pipelines</h1>
-            <p className="mt-0.5 text-sm text-ink-secondary">Skim / Deep / Embed 运行记录</p>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+              Pipelines
+            </h1>
+            <p className="mt-2 text-[12.5px] text-ink-secondary">Skim / Deep / Embed 运行记录</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -61,7 +63,7 @@ export default function Pipelines() {
           >
             <option value={30}>30</option><option value={50}>50</option><option value={100}>100</option>
           </select>
-          <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={loadRuns}>刷新</Button>
+          <Button variant="secondary" size="sm" iconLeft={<RefreshCw className="h-3.5 w-3.5" />} onClick={loadRuns}>刷新</Button>
         </div>
       </div>
 

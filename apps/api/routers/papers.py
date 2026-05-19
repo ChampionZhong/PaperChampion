@@ -208,6 +208,7 @@ def paper_detail(paper_id: UUID) -> dict:
             "keywords": (p.metadata_json or {}).get("keywords", []),
             "title_zh": (p.metadata_json or {}).get("title_zh", ""),
             "abstract_zh": (p.metadata_json or {}).get("abstract_zh", ""),
+            "institution": (p.metadata_json or {}).get("first_author_institution", ""),
             "topics": topic_map.get(str(p.id), []),
             "metadata": p.metadata_json,
             "has_embedding": p.embedding is not None,

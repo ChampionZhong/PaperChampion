@@ -2,9 +2,9 @@
  * Papers - 论文库（分页 + 文件夹/日期分类导航）
  * @author Bamzc
  */
-import { useEffect, useState, useCallback, useMemo, useRef, memo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef, memo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Badge, Empty, Spinner, Modal, Input } from "@/components/ui";
+import { Button, Badge, Empty, Spinner, Modal, Input, Dot } from "@/components/ui";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { PaperListSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/contexts/ToastContext";
@@ -12,6 +12,7 @@ import PaperCategoryFilter from "@/components/PaperCategoryFilter";
 import ResearchTagFilter from "@/components/ResearchTagFilter";
 import { paperApi, ingestApi, topicApi, pipelineApi, actionApi, tasksApi, type FolderStats, type CollectionAction } from "@/services/api";
 import { getExpandedAbstractText } from "@/lib/paperDisplay";
+const Markdown = lazy(() => import("@/components/Markdown"));
 import { formatDate } from "@/lib/utils";
 import type { Paper, Topic } from "@/types";
 import {
@@ -48,6 +49,7 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
+  Building2,
 } from "lucide-react";
 
 /* ========== 类型 ========== */
@@ -257,14 +259,37 @@ export default function Papers() {
   }, [loadFolderStats, toast]);
 
   const handleDeletePapers = useCallback(async (ids: Set<string>) => {
-    try {
-      await Promise.all([...ids].map((id) => paperApi.delete(id)));
-      toast("success", `已删除 ${ids.size} 篇论文`);
-      setConfirmDeleteIds(null);
-      loadPapers();
-      loadFolderStats();
-    } catch {
-      toast("error", "删除失败");
+    const idList = [...ids];
+    const results = await Promise.allSettled(
+      idList.map((id) => paperApi.delete(id)),
+    );
+    const failures = results.filter(
+      (r): r is PromiseRejectedResult => r.status === "rejected",
+    );
+    const succeeded = results.length - failures.length;
+    setConfirmDeleteIds(null);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      results.forEach((r, i) => {
+        if (r.status === "fulfilled") next.delete(idList[i]);
+      });
+      return next;
+    });
+    loadPapers();
+    loadFolderStats();
+    if (failures.length === 0) {
+      toast("success", `已删除 ${succeeded} 篇论文`);
+      return;
+    }
+    const reason = failures[0].reason;
+    const detail = reason instanceof Error ? reason.message : String(reason);
+    if (succeeded === 0) {
+      toast("error", `删除失败：${detail}`);
+    } else {
+      toast(
+        "error",
+        `部分删除失败：${succeeded} 成功 / ${failures.length} 失败（${detail}）`,
+      );
     }
   }, [loadPapers, loadFolderStats, toast]);
 
@@ -433,10 +458,9 @@ export default function Papers() {
               {/* ========== 按日期收录 ========== */}
               {dateEntries.length > 0 && (
                 <>
-                  <div className="my-2 border-t border-border-light" />
                   <button
                     onClick={() => setDateSectionOpen(!dateSectionOpen)}
-                    className="flex w-full items-center gap-2 px-2 py-1.5 text-left"
+                    className="mt-3 flex w-full items-center gap-2 px-2 py-1.5 text-left"
                   >
                     <Calendar className="h-3.5 w-3.5 text-ink-tertiary" />
                     <span className="flex-1 text-[10px] font-medium uppercase tracking-widest text-ink-tertiary">
@@ -478,10 +502,9 @@ export default function Papers() {
               {/* ========== 行动记录 ========== */}
               {actionsList.length > 0 && (
                 <>
-                  <div className="my-2 border-t border-border-light" />
                   <button
                     onClick={() => setActionSectionOpen(!actionSectionOpen)}
-                    className="flex w-full items-center gap-2 px-2 py-1.5 text-left"
+                    className="mt-3 flex w-full items-center gap-2 px-2 py-1.5 text-left"
                   >
                     <Download className="h-3.5 w-3.5 text-ink-tertiary" />
                     <span className="flex-1 text-[10px] font-medium uppercase tracking-widest text-ink-tertiary">
@@ -526,10 +549,10 @@ export default function Papers() {
         </nav>
 
         {/* 底部按钮 */}
-        <div className="border-t border-border p-3">
+        <div className="p-3">
           <Button
             size="sm"
-            icon={<Download className="h-3.5 w-3.5" />}
+            iconLeft={<Download className="h-3.5 w-3.5" />}
             onClick={() => setIngestOpen(true)}
             className="w-full"
           >
@@ -541,11 +564,14 @@ export default function Papers() {
       {/* ========== 右侧论文列表 ========== */}
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* 头部 */}
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold text-ink">{activeFolderName}</h1>
-            <span className="rounded-full bg-page px-2.5 py-0.5 text-xs font-medium text-ink-secondary">
-              {total} 篇
+        <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <Dot module="papers" size={6} />
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+              {activeFolderName}
+            </h1>
+            <span className="rounded-full bg-page px-2 py-0.5 font-mono text-[11px] tabular-nums text-ink-tertiary">
+              {total}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -554,25 +580,25 @@ export default function Papers() {
               <button
                 aria-label="列表视图"
                 onClick={() => setViewMode("list")}
-                className={`rounded-md p-1.5 transition-colors ${viewMode === "list" ? "bg-primary/10 text-primary" : "text-ink-tertiary hover:text-ink"}`}
+                className={`rounded-md p-1.5 transition-colors duration-fast ${viewMode === "list" ? "bg-primary-light text-primary-strong" : "text-ink-tertiary hover:text-ink"}`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
               </button>
               <button
                 aria-label="网格视图"
                 onClick={() => setViewMode("grid")}
-                className={`rounded-md p-1.5 transition-colors ${viewMode === "grid" ? "bg-primary/10 text-primary" : "text-ink-tertiary hover:text-ink"}`}
+                className={`rounded-md p-1.5 transition-colors duration-fast ${viewMode === "grid" ? "bg-primary-light text-primary-strong" : "text-ink-tertiary hover:text-ink"}`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
               </button>
             </div>
-            <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={refresh}>刷新</Button>
-            <Button size="sm" icon={<Download className="h-3.5 w-3.5" />} onClick={() => setIngestOpen(true)} className="lg:hidden">摄入</Button>
+            <Button variant="secondary" size="sm" iconLeft={<RefreshCw className="h-3.5 w-3.5" />} onClick={refresh}>刷新</Button>
+            <Button size="sm" iconLeft={<Download className="h-3.5 w-3.5" />} onClick={() => setIngestOpen(true)} className="lg:hidden">摄入</Button>
           </div>
         </div>
 
         {/* 搜索 + 排序筛选 */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-border-light px-5 py-3">
+        <div className="flex flex-wrap items-center gap-2 px-5 py-3">
           <div className="relative max-w-sm flex-1">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-tertiary" />
             <input
@@ -657,10 +683,10 @@ export default function Papers() {
           {selected.size > 0 && (
             <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5">
               <span className="text-xs font-medium text-primary">已选 {selected.size}</span>
-              <Button size="sm" variant="secondary" onClick={handleBatchSkim} disabled={batchRunning} icon={<Zap className="h-3 w-3" />}>粗读</Button>
-              <Button size="sm" variant="secondary" onClick={handleBatchEmbed} disabled={batchRunning} icon={<Cpu className="h-3 w-3" />}>嵌入</Button>
-              <Button size="sm" variant="secondary" onClick={handleBatchClassifyResearchTags} disabled={batchRunning} icon={<Sparkles className="h-3 w-3" />}>研究标签</Button>
-              <Button size="sm" variant="secondary" onClick={() => setConfirmDeleteIds(selected)} icon={<Trash2 className="h-3 w-3" />}>删除</Button>
+              <Button size="sm" variant="secondary" onClick={handleBatchSkim} disabled={batchRunning} iconLeft={<Zap className="h-3 w-3" />}>粗读</Button>
+              <Button size="sm" variant="secondary" onClick={handleBatchEmbed} disabled={batchRunning} iconLeft={<Cpu className="h-3 w-3" />}>嵌入</Button>
+              <Button size="sm" variant="secondary" onClick={handleBatchClassifyResearchTags} disabled={batchRunning} iconLeft={<Sparkles className="h-3 w-3" />}>研究标签</Button>
+              <Button size="sm" variant="secondary" onClick={() => setConfirmDeleteIds(selected)} iconLeft={<Trash2 className="h-3 w-3" />}>删除</Button>
               <button onClick={() => setSelected(new Set())} className="text-[10px] text-ink-tertiary hover:text-ink">取消</button>
               {batchProgress && (
                 <div className="flex items-center gap-2">
@@ -739,7 +765,7 @@ export default function Papers() {
 
         {/* ========== 分页 ========== */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border px-5 py-3">
+          <div className="flex items-center justify-between px-5 py-3">
             <span className="text-xs text-ink-tertiary">
               共 {total} 篇，第 {page}/{totalPages} 页
             </span>
@@ -881,7 +907,9 @@ const PaperListItem = memo(function PaperListItem({ paper, selected, onSelect, o
             </div>
             {paper.title_zh && <p className="text-[11px] text-ink-tertiary">{paper.title_zh}</p>}
             {hasAbstract && expanded && (
-              <p className="text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</p>
+              <Suspense fallback={<p className="text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</p>}>
+                <Markdown className="space-y-1.5 break-words text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</Markdown>
+              </Suspense>
             )}
             {/* 元信息 */}
             <div className="flex items-center gap-3 text-[10px] text-ink-tertiary">
@@ -894,6 +922,11 @@ const PaperListItem = memo(function PaperListItem({ paper, selected, onSelect, o
             </div>
             {/* 标签行 */}
             <div className="flex flex-wrap items-center gap-1">
+              {paper.institution && (
+                <span className="inline-flex items-center gap-0.5 rounded-md border border-warning/20 bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning">
+                  <Building2 className="h-2 w-2" />{paper.institution}
+                </span>
+              )}
               {paper.research_tags?.map((rt) => (
                 <span key={rt} className="inline-flex items-center gap-0.5 rounded-md bg-info/10 px-1.5 py-0.5 text-[9px] font-medium text-info">
                   <Sparkles className="h-2 w-2" />{rt}
@@ -980,9 +1013,18 @@ const PaperGridItem = memo(function PaperGridItem({ paper, onFavorite, onDelete,
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
         </button>
       )}
-      {hasAbstract && expanded && <p className="mt-1.5 text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</p>}
+      {hasAbstract && expanded && (
+        <Suspense fallback={<p className="mt-1.5 text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</p>}>
+          <Markdown className="mt-1.5 space-y-1.5 break-words text-[11px] leading-relaxed text-ink-secondary">{expandedAbstract}</Markdown>
+        </Suspense>
+      )}
       <div className="mt-auto pt-2.5">
         <div className="flex flex-wrap gap-1">
+          {paper.institution && (
+            <span className="inline-flex items-center gap-0.5 rounded-md border border-warning/20 bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning">
+              <Building2 className="h-2 w-2" />{paper.institution}
+            </span>
+          )}
           {paper.research_tags?.slice(0, 2).map((rt) => (
             <span key={rt} className="inline-flex items-center gap-0.5 rounded-md bg-info/10 px-1.5 py-0.5 text-[9px] font-medium text-info">
               <Sparkles className="h-2 w-2" />{rt}

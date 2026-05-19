@@ -4,7 +4,7 @@
  * @author Bamzc
  */
 import { useState } from "react";
-import { Card, CardHeader, Button, Input } from "@/components/ui";
+import { Card, CardHeader, Button, Input, Dot } from "@/components/ui";
 import { useToast } from "@/contexts/ToastContext";
 import { citationApi, jobApi, systemApi } from "@/services/api";
 import type { CitationSyncResult, SystemStatus } from "@/types";
@@ -171,11 +171,16 @@ export default function Operations() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-ink">Operations</h1>
-        <p className="mt-1 text-sm text-ink-secondary">
-          引用同步、定时任务、系统检查等运维操作
-        </p>
+      <div className="flex items-center gap-2.5 pb-2">
+        <Dot module="dashboard" size={6} />
+        <div>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-ink">
+            Operations
+          </h1>
+          <p className="mt-2 text-[12.5px] text-ink-secondary">
+            引用同步、定时任务、系统检查等运维操作
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -242,7 +247,7 @@ export default function Operations() {
               </p>
               <Button
                 variant="secondary"
-                icon={<RefreshCw className="h-3.5 w-3.5" />}
+                iconLeft={<RefreshCw className="h-3.5 w-3.5" />}
                 onClick={handleSyncIncremental}
                 loading={loadings.syncIncremental}
               >
@@ -268,7 +273,7 @@ export default function Operations() {
               </p>
               <Button
                 variant="secondary"
-                icon={<Play className="h-3.5 w-3.5" />}
+                iconLeft={<Play className="h-3.5 w-3.5" />}
                 onClick={handleDailyJob}
                 loading={loadings.dailyJob}
               >
@@ -284,7 +289,7 @@ export default function Operations() {
               </p>
               <Button
                 variant="secondary"
-                icon={<Network className="h-3.5 w-3.5" />}
+                iconLeft={<Network className="h-3.5 w-3.5" />}
                 onClick={handleWeeklyJob}
                 loading={loadings.weeklyJob}
               >
@@ -302,7 +307,7 @@ export default function Operations() {
               </p>
               <Button
                 variant="secondary"
-                icon={<Zap className="h-3.5 w-3.5" />}
+                iconLeft={<Zap className="h-3.5 w-3.5" />}
                 onClick={handleCheckHealth}
                 loading={loadings.health}
               >

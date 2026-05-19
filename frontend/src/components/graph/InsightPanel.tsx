@@ -126,7 +126,7 @@ export default function InsightPanel() {
             </select>
             <ChevronDown className="absolute right-2.5 h-3.5 w-3.5 text-ink-tertiary pointer-events-none" />
           </div>
-          <Button icon={<Search className="h-4 w-4" />} onClick={handleSubmit} loading={loading}>分析</Button>
+          <Button iconLeft={<Search className="h-4 w-4" />} onClick={handleSubmit} loading={loading}>分析</Button>
         </div>
       </div>
 
@@ -350,7 +350,10 @@ function EvolutionContent({ data }: { data: EvolutionResponse }) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-page">
-                      <div className="bar-animate h-full rounded-full bg-gradient-to-r from-primary to-primary/60" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-primary transition-[width] duration-slow ease-standard"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                     <span className="w-10 text-right text-xs font-medium text-ink-secondary">{b.paper_count}</span>
                   </div>
@@ -375,13 +378,26 @@ function QualityContent({ data }: { data: GraphQuality }) {
     { label: "日期覆盖", value: `${(data.publication_date_coverage * 100).toFixed(1)}%`, icon: Clock, color: "info" },
   ] as const;
 
+  const iconColor: Record<string, string> = {
+    primary: "text-primary",
+    info: "text-info",
+    warning: "text-warning",
+    success: "text-success",
+  };
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       {metrics.map((m) => (
-        <div key={m.label} className={`stat-gradient-${m.color} rounded-2xl border border-border p-4`}>
-          <m.icon className={`h-4 w-4 text-${m.color} mb-2`} />
-          <p className="text-xl font-bold text-ink">{m.value}</p>
-          <p className="text-xs text-ink-tertiary">{m.label}</p>
+        <div
+          key={m.label}
+          className="rounded-xl border border-border bg-surface p-4"
+        >
+          <m.icon className={`mb-2 h-4 w-4 ${iconColor[m.color] ?? "text-ink-tertiary"}`} />
+          <p className="font-display text-[20px] font-semibold tabular-nums leading-none text-ink">
+            {m.value}
+          </p>
+          <p className="mt-1.5 text-[11px] uppercase tracking-wider text-ink-tertiary">
+            {m.label}
+          </p>
         </div>
       ))}
     </div>

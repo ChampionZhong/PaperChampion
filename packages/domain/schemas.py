@@ -18,6 +18,7 @@ class SkimReport(BaseModel):
     keywords: list[str] = []
     title_zh: str = ""
     abstract_zh: str = ""
+    first_author_institution: str = ""
     relevance_score: float
 
 
